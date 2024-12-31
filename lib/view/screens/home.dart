@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:star_cart2/bloc/bloc.dart';
 import 'package:star_cart2/view/components/productCard.dart';
 
 class Homescreen extends StatefulWidget {
@@ -26,12 +28,14 @@ class _HomescreenState extends State<Homescreen> {
     super.dispose();
     pageController.dispose();
   }
-
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
-    backgroundColor: Colors.blue,
-      body: bodyUI(context),
+      backgroundColor: Colors.blue,
+      body: BlocProvider(
+        create: (_) => ProductCubit()..fetchProducts(),  // Ensuring cubit fetches products
+        child: bodyUI(context),  // Pass context to child widget
+      ),
     );
   }
 
@@ -137,33 +141,52 @@ class _HomescreenState extends State<Homescreen> {
     ]);
   }
 
-  gridB(BuildContext context) {
-    return GridView.builder(
-        scrollDirection: Axis.vertical,
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        padding: const EdgeInsets.all(8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+ gridB(BuildContext context) {
+  return BlocBuilder<ProductCubit, ProductState>(
+    builder: (context, state) {
+      if (state is ProductLoading) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (state is ProductError) {
+        return Center(child: Text(state.message));
+      } else if (state is ProductLoaded) {
+        return GridView.builder(
+          scrollDirection: Axis.vertical,
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(8),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 12.0,
             childAspectRatio: 0.75,
             mainAxisSpacing: 10,
-            mainAxisExtent: 300),
-        itemCount: 10,
-        itemBuilder: (context, index) {
-         
-          return ProductCard(
-            
-            margin: EdgeInsets.symmetric(
-              horizontal: MediaQuery.sizeOf(context).width * 0.02,
-              vertical: MediaQuery.sizeOf(context).height * 0.02,
-            ),
-            onTap: () {
-             
-            },
-          );
-        });
-  }
+            mainAxisExtent: 300,
+          ),
+          itemCount: 10,
+          itemBuilder: (context, index) {
+            final product = state.products[index]; // Getting the actual product
+
+            return ProductCard(
+              image: product.images?.isNotEmpty == true
+                  ? product.images!.first // Using the first image of the product
+                  : '', 
+              title: product.title ?? 'No Title',
+              price: product.price?.toDouble() ?? 0.0, // Ensure price is a double
+              margin: EdgeInsets.symmetric(
+                horizontal: MediaQuery.sizeOf(context).width * 0.02,
+                vertical: MediaQuery.sizeOf(context).height * 0.02,
+              ),
+              onTap: () {
+                // Handle product tap
+              },
+            );
+          },
+        );
+      } else {
+        return const Center(child: Text('Something went wrong!'));
+      }
+    },
+  );
+}
 
   _rowW(BuildContext context) {
     return SizedBox(

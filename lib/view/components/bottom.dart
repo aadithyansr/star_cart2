@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:star_cart2/view/screens/categ.dart';
 import 'package:star_cart2/view/screens/home.dart';
+import 'package:star_cart2/view/screens/profile.dart';
 import 'package:water_drop_nav_bar/water_drop_nav_bar.dart';
 
 
@@ -18,9 +19,10 @@ class _BottomBarState extends State<BottomBar> {
   // List of widgets for each tab
   final List<Widget> _pages = [
     Center(child: Homescreen()),
+     Center(child: CategPage(),),
     Center(child: Text("Search Page")),
-  Center(child: CategPage(),),
-    Center(child: Text("Profile Page")),
+ 
+    Center(child: Prof()),
   ];
 
   // Function to handle tab changes
